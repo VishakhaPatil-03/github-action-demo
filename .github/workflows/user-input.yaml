@@ -1,15 +1,15 @@
+
 name: testing user input
 
 on:
   workflow_dispatch:
-
     inputs:
       number1:
         description: 'first number'
-        default: '0' 
+        default: '0'
         required: true
       number2:
-        description:  'second number'
+        description: 'second number'
         default: '0'
         required: true
 
@@ -20,7 +20,9 @@ jobs:
     steps:
       - name: add numbers
         id: sum
-        run: echo "::set-output name=sum::${{ ${{ inputs.number1 }} + ${{inputs.number2}}}}"
+        run: |
+          sum=$((${{ inputs.number1 }} + ${{ inputs.number2 }}))
+          echo "sum=$sum" >> "$GITHUB_OUTPUT"
 
       - name: Display sum
-        run: echo "the sum of ${{inputs.number1}} and ${{ inputs.number2}} is ${{steps.sum.outputs.sum}}"
+        run: echo "the sum of ${{ inputs.number1 }} and ${{ inputs.number2 }} is ${{ steps.sum.outputs.sum }}"
