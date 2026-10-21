@@ -18,10 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: add numbers
+      - name: subtract numbers
         id: sub
         run: |
-          sum=$((${{ inputs.number1 }} - ${{ inputs.number2 }}))
+          sub=$((${{ inputs.number1 }} - ${{ inputs.number2 }}))
           echo "sub=$sub" >> "$GITHUB_OUTPUT"
 
       - name: Display sub
