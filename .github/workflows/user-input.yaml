@@ -19,10 +19,10 @@ jobs:
 
     steps:
       - name: add numbers
-        id: sum
+        id: sub
         run: |
-          sum=$((${{ inputs.number1 }} + ${{ inputs.number2 }}))
-          echo "sum=$sum" >> "$GITHUB_OUTPUT"
+          sum=$((${{ inputs.number1 }} - ${{ inputs.number2 }}))
+          echo "sub=$sub" >> "$GITHUB_OUTPUT"
 
-      - name: Display sum
-        run: echo "the sum of ${{ inputs.number1 }} and ${{ inputs.number2 }} is ${{ steps.sum.outputs.sum }}"
+      - name: Display sub
+        run: echo "the sub of ${{ inputs.number1 }} and ${{ inputs.number2 }} is ${{ steps.sub.outputs.sub }}"
