@@ -17,12 +17,34 @@ jobs:
   sub_numbers:
     runs-on: ubuntu-latest
 
+
     steps:
-      - name: subtract numbers
+      - name: multi eqution numbers
         id: sub
         run: |
           sub=$((${{ inputs.number1 }} - ${{ inputs.number2 }}))
           echo "sub=$sub" >> "$GITHUB_OUTPUT"
+          
+      - name: add numbers
+        id: add
+        run: |
+          add=$((${{ inputs.number1 }} + ${{ inputs.number2}}))
+          echo "add=$add" >> "$GITHUB_OUTPUT"
+          
+      - name: mul numbers
+        id: mul
+        run: |
+          add=$((${{ inputs.number1 }} * ${{ inputs.number2}}))
+          echo "mul=$mul" >> "$GITHUB_OUTPUT"
 
       - name: Display sub
         run: echo "the sub of ${{ inputs.number1 }} and ${{ inputs.number2 }} is ${{ steps.sub.outputs.sub }}"
+
+      - name: Display add
+        run: echo "the addtion of ${{ inputs.number1 }} and ${{inputs.number2 }} is ${{ steps.add.outputs.add}}"
+
+      - name: Display mul
+        run: echo "the multiplication of ${{ inputs.number1 }} and ${{inputs.number2 }} is ${{ steps.mul.outputs.mul}}"
+  
+      
+        
