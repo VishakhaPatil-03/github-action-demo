@@ -25,6 +25,12 @@ jobs:
           sub=$((${{ inputs.number1 }} - ${{ inputs.number2 }}))
           echo "sub=$sub" >> "$GITHUB_OUTPUT"
           
+      - name: div numbers
+        id: div
+        run: |
+          div=$((${{inputs.number1 }} / ${{inputs.number2 }}))
+          echo "div=$div" >> "$GITHUB_OUTPUT"
+          
       - name: add numbers
         id: add
         run: |
@@ -45,6 +51,8 @@ jobs:
 
       - name: Display mul
         run: echo "the multiplication of ${{ inputs.number1 }} and ${{inputs.number2 }} is ${{ steps.mul.outputs.mul }}"
-  
+
+      - name: display div
+        run: echo "the division of ${{ inputs.number1 }} and $ {{inputs.number2}} is ${{ steps.div.outputs.div }}"
       
         
