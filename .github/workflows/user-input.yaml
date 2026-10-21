@@ -14,12 +14,12 @@ on:
         required: true
 
 jobs:
-  sub_numbers:
+  all_numbers:
     runs-on: ubuntu-latest
 
 
     steps:
-      - name: multi eqution numbers
+      - name: sub  numbers
         id: sub
         run: |
           sub=$((${{ inputs.number1 }} - ${{ inputs.number2 }}))
@@ -34,7 +34,7 @@ jobs:
       - name: mul numbers
         id: mul
         run: |
-          add=$((${{ inputs.number1 }} * ${{ inputs.number2}}))
+          mul=$((${{ inputs.number1 }} * ${{ inputs.number2}}))
           echo "mul=$mul" >> "$GITHUB_OUTPUT"
 
       - name: Display sub
@@ -44,7 +44,7 @@ jobs:
         run: echo "the addtion of ${{ inputs.number1 }} and ${{inputs.number2 }} is ${{ steps.add.outputs.add}}"
 
       - name: Display mul
-        run: echo "the multiplication of ${{ inputs.number1 }} and ${{inputs.number2 }} is ${{ steps.mul.outputs.mul}}"
+        run: echo "the multiplication of ${{ inputs.number1 }} and ${{inputs.number2 }} is ${{ steps.mul.outputs.mul }}"
   
       
         
