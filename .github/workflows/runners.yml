@@ -1,0 +1,33 @@
+name: first workflow
+# controls when the workflow will run
+
+on:
+  #trigger the workflow on push and pull request events but only for the main branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+    #allows you to run this workflow manually from the action tab
+  workflow_dispatch:
+# a workflow run is made up of one or more jobs that run sequentially or in parallel
+
+jobs:
+#this workflow contains the single job called build
+  build:
+  #the type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    #steps represent a sequence of task that will be executed as part of the job 
+    steps:
+      #checkout your repo under $GITHUB_WORKSPACE, so your job can access it 
+      - uses: action/checkout@v4
+      #runs a single command using the runners shell
+      - name: run a one-line script
+        run: echo Hello, Learning Github actions!
+
+        #runs a set of command using the runners shell
+      - name: run a multi-line script
+        run: |
+          echo add other action to build,
+          echo test, and deploy your project.
