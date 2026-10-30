@@ -15,11 +15,42 @@ jobs:
   terraform:
     name: Terraform S3 Deployment
     runs-on: self-hosted
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
+      # -----------------------------------------
+      # 1. Checkout Repository
+      # -----------------------------------------
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # -----------------------------------------
+      # 2. Check Runner Resources
+      # -----------------------------------------
+      - name: Check Runner Resources
+        run: |
+          echo "===== MEMORY ====="
+          free -h
+
+          echo "===== CPU ====="
+          nproc
+
+          echo "===== DISK SPACE ====="
+          df -h
+
+          echo "===== MEMORY LIMIT ====="
+          cat /sys/fs/cgroup/memory.max || true
+
+          echo "===== MEMORY USAGE ====="
+          cat /sys/fs/cgroup/memory.current || true
+
+      # -----------------------------------------
+      # 3. Configure AWS Credentials
+      # -----------------------------------------
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -27,29 +58,77 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
+      # -----------------------------------------
+      # 4. Verify AWS Identity
+      # -----------------------------------------
       - name: Verify AWS Identity
-        run: aws sts get-caller-identity
+        run: |
+          aws sts get-caller-identity
 
+      # -----------------------------------------
+      # 5. Check Terraform Version
+      # -----------------------------------------
       - name: Check Terraform Version
-        run: terraform version
+        run: |
+          terraform version
 
+      # -----------------------------------------
+      # 6. Terraform Format
+      # -----------------------------------------
       - name: Terraform Format
-        run: terraform fmt -check main.tf
+        run: |
+          terraform fmt -check -recursive
 
+      # -----------------------------------------
+      # 7. Terraform Init
+      # -----------------------------------------
       - name: Terraform Init
-        run: terraform init
+        run: |
+          terraform init -input=false
 
+      # -----------------------------------------
+      # 8. Terraform Validate
+      # -----------------------------------------
       - name: Terraform Validate
-        run: terraform validate
+        run: |
+          terraform validate
 
+      # -----------------------------------------
+      # 9. Terraform Plan
+      # -----------------------------------------
       - name: Terraform Plan
         run: |
           terraform plan \
+            -input=false \
+            -lock-timeout=5m \
             -var="bucket_name=${{ vars.S3_BUCKET_NAME }}" \
+            -var="aws_region=${{ vars.AWS_REGION }}" \
             -out=tfplan
 
+      # -----------------------------------------
+      # 10. Terraform Apply
+      # -----------------------------------------
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: |
+          terraform apply \
+            -input=false \
+            -lock-timeout=5m \
+            -auto-approve \
+            tfplan
 
+      # -----------------------------------------
+      # 11. Show Terraform Outputs
+      # -----------------------------------------
       - name: Show Terraform Outputs
-        run: terraform output
+        run: |
+          terraform output
+
+      # -----------------------------------------
+      # 12. Verify S3 Bucket
+      # -----------------------------------------
+      - name: Verify S3 Bucket
+        run: |
+          aws s3api head-bucket \
+            --bucket "${{ vars.S3_BUCKET_NAME }}"
+
+          echo "S3 bucket deployment completed successfully!"
