@@ -39,6 +39,16 @@ variable "aws_region" {
 variable "bucket_name" {
   description = "Globally unique S3 bucket name"
   type        = string
+
+  validation {
+    condition = (
+      length(var.bucket_name) >= 3 &&
+      length(var.bucket_name) <= 63 &&
+      can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", var.bucket_name)) &&
+      !can(regex("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+", var.bucket_name))
+    )
+    error_message = "Bucket name must be 3-63 characters, lowercase letters, numbers, and hyphens only. It must start and end with a letter or number and cannot be formatted as an IP address."
+  }
 }
 
 # -----------------------------------------
@@ -68,7 +78,7 @@ resource "aws_s3_bucket_versioning" "versioning" {
 }
 
 # -----------------------------------------
-# Enable Encryption
+# Enable Server-Side Encryption
 # -----------------------------------------
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
@@ -99,13 +109,16 @@ resource "aws_s3_bucket_public_access_block" "public_access" {
 # -----------------------------------------
 
 output "s3_bucket_name" {
-  value = aws_s3_bucket.my_bucket.bucket
+  description = "Created S3 bucket name"
+  value       = aws_s3_bucket.my_bucket.bucket
 }
 
 output "s3_bucket_arn" {
-  value = aws_s3_bucket.my_bucket.arn
+  description = "Created S3 bucket ARN"
+  value       = aws_s3_bucket.my_bucket.arn
 }
 
 output "s3_bucket_region" {
-  value = var.aws_region
+  description = "AWS region where the bucket is created"
+  value       = var.aws_region
 }
