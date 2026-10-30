@@ -1,12 +1,20 @@
 
-name: Create AWS S3 Bucket
+name: Create S3 Bucket using Terraform
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-s3
+  cancel-in-progress: false
+
 jobs:
-  create-s3-bucket:
-    runs-on: ubuntu-latest
+  terraform:
+    name: Terraform S3 Deployment
+    runs-on: self-hosted
 
     steps:
       - name: Checkout Repository
@@ -19,51 +27,29 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Check AWS Identity
+      - name: Verify AWS Identity
+        run: aws sts get-caller-identity
+
+      - name: Check Terraform Version
+        run: terraform version
+
+      - name: Terraform Format
+        run: terraform fmt -check main.tf
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
         run: |
-          aws sts get-caller-identity
+          terraform plan \
+            -var="bucket_name=${{ vars.S3_BUCKET_NAME }}" \
+            -out=tfplan
 
-      - name: Create S3 Bucket
-        env:
-          BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
-          AWS_REGION: ${{ vars.AWS_REGION }}
-        run: |
-          echo "Creating S3 bucket..."
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
 
-          if [ "$AWS_REGION" = "us-east-1" ]; then
-            aws s3api create-bucket \
-              --bucket "$BUCKET_NAME" \
-              --region "$AWS_REGION"
-          else
-            aws s3api create-bucket \
-              --bucket "$BUCKET_NAME" \
-              --region "$AWS_REGION" \
-              --create-bucket-configuration LocationConstraint="$AWS_REGION"
-          fi
-
-          echo "S3 bucket creation completed!"
-
-      - name: Enable Bucket Encryption
-        env:
-          BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
-        run: |
-          aws s3api put-bucket-encryption \
-            --bucket "$BUCKET_NAME" \
-            --server-side-encryption-configuration \
-            '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}'
-
-      - name: Block Public Access
-        env:
-          BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
-        run: |
-          aws s3api put-public-access-block \
-            --bucket "$BUCKET_NAME" \
-            --public-access-block-configuration \
-            BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
-
-      - name: Verify S3 Bucket
-        env:
-          BUCKET_NAME: ${{ vars.S3_BUCKET_NAME }}
-        run: |
-          aws s3api head-bucket --bucket "$BUCKET_NAME"
-          echo "S3 bucket successfully created and verified!"
+      - name: Show Terraform Outputs
+        run: terraform output
